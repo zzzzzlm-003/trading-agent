@@ -1,0 +1,15 @@
+# Large / local-only
+transcripts/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+
+# Runtime state (may contain sensitive data)
+discipline_ledger.json
+trade_state.json
+
+# OS
+.DS_Store
