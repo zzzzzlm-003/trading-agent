@@ -1,7 +1,7 @@
 """
 YouTube 会员视频 Transcript 获取工具
 =====================================
-适用场景：无自动字幕的会员视频
+适用场景：无自动字幕的会员视频（如环球视野财经）
 流程：yt-dlp 下载音频 → OpenAI Whisper 本地转录 → 输出文字稿
 
 依赖安装：
@@ -225,7 +225,7 @@ def extract_methodology(transcript_path: str, api_key: str = None) -> str:
 
     client = anthropic.Anthropic(api_key=key)
 
-    prompt = f"""以下是一段财经视频的转录文字稿。请从中提炼出：
+    prompt = f"""以下是一段财经博主视频的转录文字稿。请从中提炼出：
 
 1. **选股逻辑与标准**：他如何筛选标的？关注哪些指标？
 2. **入场条件**：什么情况下建仓？技术面和基本面分别看什么？

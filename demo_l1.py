@@ -9,7 +9,7 @@ L1 演示脚本
 from config import ACCOUNTS, get_effective_capital
 from trade_gate import check_entry, check_exit_partial, print_entry_decision
 import trade_state as ts
-import discipline_ledger as gl
+import gambling_ledger as gl
 
 
 def section(title):
@@ -96,8 +96,8 @@ def main():
     print_entry_decision(d6)
 
     section("场景 7：账户回撤熔断（模拟 -10% 回撤）")
-    ts.update_account_value("US_STOCKS", 10_000)   # 峰值
-    ts.update_account_value("US_STOCKS", 9_000)    # -10%
+    ts.update_account_value("US_STOCKS", 13_000)   # 峰值
+    ts.update_account_value("US_STOCKS", 11_700)   # -10%
     d7 = check_entry(
         account="US_STOCKS", symbol="GOOGL",
         entry_price=180.0, atr=3.0,
@@ -106,28 +106,28 @@ def main():
     )
     print_entry_decision(d7)
 
-    section("场景 8：投机账户——买 $5 末日期权")
-    r = gl.check_discipline_trade(5.0, "NVDA 0DTE call")
+    section("场景 8：赌狗账户——买 $5 末日期权")
+    r = gl.check_gambling_trade(5.0, "NVDA 0DTE call")
     print(f"  允许：{r['allowed']}  剩余预算：${r['remaining']}")
     if r["allowed"]:
-        gl.log_discipline_entry(5.0, "NVDA 0DTE call", "演示")
+        gl.log_gambling_entry(5.0, "NVDA 0DTE call", "演示")
     gl.print_status()
 
-    section("场景 9：投机预算已耗尽想再买 $50")
+    section("场景 9：赌狗预算已耗尽想再买 $50")
     # 把剩余预算先花掉
     for _ in range(19):
-        check = gl.check_discipline_trade(5.0)
+        check = gl.check_gambling_trade(5.0)
         if check["allowed"]:
-            gl.log_discipline_entry(5.0, "demo burn")
-    r2 = gl.check_discipline_trade(50.0, "SPY 0DTE")
+            gl.log_gambling_entry(5.0, "demo burn")
+    r2 = gl.check_gambling_trade(50.0, "SPY 0DTE")
     print(f"  允许：{r2['allowed']}")
     for b in r2["blockers"]:
         print(f"  {b}")
     gl.print_status()
 
-    print("\n\n✅ 演示完成。trade_state.json 和 discipline_ledger.json 已生成在当前目录。")
+    print("\n\n✅ 演示完成。trade_state.json 和 gambling_ledger.json 已生成在当前目录。")
     print("   运行  python trade_state.py   查看完整状态")
-    print("   运行  python discipline_ledger.py   查看投机账本")
+    print("   运行  python gambling_ledger.py   查看赌狗账本")
 
 
 if __name__ == "__main__":

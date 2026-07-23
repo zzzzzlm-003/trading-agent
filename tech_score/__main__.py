@@ -11,7 +11,7 @@ def main():
     p = argparse.ArgumentParser(prog="tech_score")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    pv = sub.add_parser("verify", help="Backtest a rule on the verification universe")
+    pv = sub.add_parser("verify", help="Backtest a blogger rule on the verification universe")
     pv.add_argument("rule", help="rule module name, e.g. macd")
     pv.add_argument("--period", default="10y")
     pv.add_argument("--universe", default="verification",

@@ -1,8 +1,8 @@
 """Keltner Channel + ATR — 会员第71期.
 
-改良版 (literal):
+博主改良版 (literal):
   - 中轨 EMA20、上下轨 ±2·ATR(14)
-  - 原始口径："不要机械地下轨买、上轨卖；通道是观察点"
+  - 博主原话："不要机械地下轨买、上轨卖；通道是观察点"
   - Buy: 上升通道（中轨上斜）+ 价格回测中轨企稳
   - Sell: 上升通道 + 价格触上轨且 3 根 K 线内中轨破位
 """
@@ -20,7 +20,7 @@ def signal(df: pd.DataFrame) -> pd.Series:
     atr = pd.Series(talib.ATR(h, l, c, timeperiod=14), index=df.index)
     ema20 = df["Close"].ewm(span=20, adjust=False).mean()
     upper = ema20 + 2 * atr
-    # lower = ema20 - 2 * atr  # not used in the rule
+    # lower = ema20 - 2 * atr  # not used in blogger's rule
     close = df["Close"]
 
     # 上升通道：中轨 5 日斜率 > 0

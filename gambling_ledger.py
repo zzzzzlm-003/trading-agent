@@ -1,18 +1,18 @@
 """
-投机预算账本
+赌狗预算账本
 ============
 物理隔离投机欲，保护主账户纪律。
 
-规则（见 config.DISCIPLINE）：
+规则（见 config.GAMBLING）：
 - 月初自动重置到 $100
 - 当月亏完即停，不得从主账户补仓
 - 盈利不累积进下月（月末结转主账户）
 - 主账户纪律不受此账户盈亏影响
 
-本模块独立于 trade_gate.py：投机账户不走信号打分、不走风控闸门，
+本模块独立于 trade_gate.py：赌狗账户不走信号打分、不走风控闸门，
 只有一条硬规则——本月预算还没花完就能买，花完就不能买。
 
-存储：./discipline_ledger.json
+存储：./gambling_ledger.json
 """
 
 import json
@@ -21,7 +21,7 @@ from pathlib import Path
 
 from config import ACCOUNTS
 
-LEDGER_FILE = Path(__file__).parent / "discipline_ledger.json"
+LEDGER_FILE = Path(__file__).parent / "gambling_ledger.json"
 
 
 def _current_month() -> str:
@@ -54,7 +54,7 @@ def _save(ledger: dict) -> None:
 def _ensure_month(ledger: dict, month: str) -> dict:
     """保证当月条目存在（月初自动开新账）。"""
     if month not in ledger["months"]:
-        budget = ACCOUNTS["DISCIPLINE"]["monthly_budget"]
+        budget = ACCOUNTS["GAMBLING"]["monthly_budget"]
         ledger["months"][month] = {
             "budget":      budget,
             "used":        0.0,
@@ -70,9 +70,9 @@ def _ensure_month(ledger: dict, month: str) -> dict:
 # 开仓检查
 # ─────────────────────────────────────────────────────────────
 
-def check_discipline_trade(cost_usd: float, description: str = "") -> dict:
+def check_gambling_trade(cost_usd: float, description: str = "") -> dict:
     """
-    投机账户开仓前检查。只有一条规则：本月预算够不够。
+    赌狗账户开仓前检查。只有一条规则：本月预算够不够。
     """
     ledger = _load()
     month = _current_month()
@@ -103,14 +103,14 @@ def check_discipline_trade(cost_usd: float, description: str = "") -> dict:
         "cost":         round(cost_usd, 2),
         "blockers":     blockers,
         "reminder":     (
-            "⚠️ 投机账户只消化你的投机欲，不影响主账户判断。"
+            "⚠️ 赌狗账户只消化你的投机欲，不影响主账户判断。"
             "主账户的信号、纪律、仓位——照旧执行。"
         ),
     }
 
 
-def log_discipline_entry(cost_usd: float, instrument: str, note: str = "") -> dict:
-    """记录投机开仓（扣减预算）。"""
+def log_gambling_entry(cost_usd: float, instrument: str, note: str = "") -> dict:
+    """记录赌狗开仓（扣减预算）。"""
     ledger = _load()
     month = _current_month()
     m = _ensure_month(ledger, month)
@@ -134,8 +134,8 @@ def log_discipline_entry(cost_usd: float, instrument: str, note: str = "") -> di
     return trade
 
 
-def log_discipline_exit(trade_id: str, pnl_usd: float) -> dict:
-    """记录投机关仓（盈利不回流预算，归入 realized_pnl 供月末结转）。"""
+def log_gambling_exit(trade_id: str, pnl_usd: float) -> dict:
+    """记录赌狗关仓（盈利不回流预算，归入 realized_pnl 供月末结转）。"""
     ledger = _load()
     month = _current_month()
     m = _ensure_month(ledger, month)
@@ -156,7 +156,7 @@ def log_discipline_exit(trade_id: str, pnl_usd: float) -> dict:
 # ─────────────────────────────────────────────────────────────
 
 def get_month_status(month: str | None = None) -> dict:
-    """查某个月（默认当月）的投机账户状态。"""
+    """查某个月（默认当月）的赌狗账户状态。"""
     ledger = _load()
     month = month or _current_month()
     m = _ensure_month(ledger, month)
@@ -196,10 +196,10 @@ def close_month_and_transfer(month: str | None = None) -> dict:
 
 def print_status(month: str | None = None) -> None:
     s = get_month_status(month)
-    rules = ACCOUNTS["DISCIPLINE"]
+    rules = ACCOUNTS["GAMBLING"]
     w = 52
     print(f"\n{'─' * w}")
-    print(f"  🎰 投机账户  {s['month']}")
+    print(f"  🎰 赌狗账户  {s['month']}")
     print(f"{'─' * w}")
     print(f"  月预算：        ${s['budget']:.2f}")
     print(f"  已使用：        ${s['used']:.2f}")
@@ -221,14 +221,14 @@ if __name__ == "__main__":
 
     elif args[0] == "check" and len(args) >= 2:
         cost = float(args[1])
-        r = check_discipline_trade(cost)
+        r = check_gambling_trade(cost)
         print(json.dumps(r, indent=2, ensure_ascii=False))
 
     elif args[0] == "demo":
         print("演示：$100 预算，买 $5 末日 call")
-        r1 = check_discipline_trade(5, "NVDA 0DTE call")
+        r1 = check_gambling_trade(5, "NVDA 0DTE call")
         print(f"  check: {r1['allowed']}  remaining={r1['remaining']}")
         if r1["allowed"]:
-            t = log_discipline_entry(5, "NVDA 0DTE call", "demo")
+            t = log_gambling_entry(5, "NVDA 0DTE call", "demo")
             print(f"  开仓记录：{t['trade_id']}")
         print_status()

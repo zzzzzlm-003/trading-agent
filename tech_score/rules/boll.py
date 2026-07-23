@@ -1,6 +1,6 @@
 """Bollinger Bands — 会员第52期.
 
-规则 (literal mean-reversion version):
+博主规则 (literal mean-reversion version):
   - 收盘价触及下轨 (bb_pos < 5%) = 超跌买信号
   - 收盘价触及上轨 (bb_pos > 95%) = 超涨卖信号
   - 参数 20, 2σ

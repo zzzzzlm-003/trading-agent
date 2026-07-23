@@ -1,5 +1,6 @@
 # Large / local-only
 transcripts/
+yuncun/
 __pycache__/
 *.py[cod]
 .venv/
@@ -8,7 +9,7 @@ venv/
 .env.*
 
 # Runtime state (may contain sensitive data)
-discipline_ledger.json
+gambling_ledger.json
 trade_state.json
 
 # OS

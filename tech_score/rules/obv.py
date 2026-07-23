@@ -1,6 +1,6 @@
 """OBV — 会员第53期.
 
-规则 (literal momentum):
+博主规则 (literal momentum):
   - OBV 20 日均线上穿 OBV 60 日均线 = 量能突破，买
   - OBV 20 日均线下穿 OBV 60 日均线 = 量能衰竭，卖
 """

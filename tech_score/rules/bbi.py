@@ -1,7 +1,7 @@
 """BBI 多空指标 — 会员第67期.
 
 BBI = (MA3 + MA6 + MA12 + MA24) / 4
-规则 (literal):
+博主规则 (literal):
   - 价格上穿 BBI = 买
   - 价格下穿 BBI = 卖
 """

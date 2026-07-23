@@ -3,11 +3,11 @@
 ==================
 本文件是整个 L1 风控的真理源。调参只改这里，不动其他模块。
 
-账户结构（数字均为占位示例，使用前改成自己的）：
-- A_SHARES      A股券商账户  100,000 RMB（占位）
-- US_STOCKS     美股账户     10,000 USD（占位）
+账户结构（2026-04 基准）：
+- A_SHARES      A股券商账户  25w RMB
+- US_STOCKS     美股账户     ~13k USD 可用（扣$7k学费后）
 - US_OPTIONS    美股期权子账户（共享美股资金，单独规则）
-- DISCIPLINE      投机预算     $100/月（占位，物理隔离投机欲）
+- GAMBLING      赌狗预算     $100/月（物理隔离投机欲）
 """
 
 from datetime import datetime
@@ -20,8 +20,8 @@ ACCOUNTS = {
     "A_SHARES": {
         "name":                           "A股券商账户",
         "currency":                       "CNY",
-        "capital":                        100_000,     # 可用资金（占位数字）
-        "risk_per_trade_pct":             1.0,         # 单笔最大亏损 1%
+        "capital":                        250_000,     # 可用资金（不含基金6w）
+        "risk_per_trade_pct":             1.0,         # 单笔最大亏损 1% = 2500元
         "risk_per_trade_hard_cap":        None,        # A股无心理红线
         "max_positions":                  5,           # 同时最多持仓数
         "max_single_pos_pct":             20.0,        # 单只最大 20%
@@ -38,9 +38,9 @@ ACCOUNTS = {
     "US_STOCKS": {
         "name":                           "美股账户",
         "currency":                       "USD",
-        "capital":                        10_000,      # 可用资金（占位数字）
-        "reserved":                       1_000,       # 预留资金，不可动（占位数字）
-        "risk_per_trade_pct":             1.5,         # 单笔最大亏损 1.5%
+        "capital":                        13_000,      # 扣除 $7k 学费后可用
+        "reserved":                       7_000,       # 学费储备，不可动
+        "risk_per_trade_pct":             1.5,         # 账面硬规则 $200
         "risk_per_trade_hard_cap":        300,         # 心理红线：单笔绝不越 $300
         "max_positions":                  5,
         "max_single_pos_pct":             25.0,
@@ -73,8 +73,8 @@ ACCOUNTS = {
         ],
     },
 
-    "DISCIPLINE": {
-        "name":                           "投机预算",
+    "GAMBLING": {
+        "name":                           "赌狗预算",
         "currency":                       "USD",
         "monthly_budget":                 100,         # $100/月
         "reset_day":                      1,           # 每月 1 号重置
@@ -85,7 +85,7 @@ ACCOUNTS = {
 }
 
 # ─────────────────────────────────────────────────────────────
-# 行为拦截规则（对抗常见的 4 个犯错点）
+# 行为拦截规则（对抗她自认的 4 个犯错点）
 # ─────────────────────────────────────────────────────────────
 
 BEHAVIORAL_RULES = {

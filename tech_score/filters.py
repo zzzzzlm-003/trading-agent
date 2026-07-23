@@ -1,6 +1,6 @@
 """Liquidity / size filters.
 
-The rule set targets large-cap liquid names (TSLA/AAPL/AMZN-class).
+Blogger's teaching targets large-cap liquid names (TSLA/AAPL/AMZN-class).
 We gate signals on:
   - enough history (≥ `min_bars` days)
   - average 20-day dollar volume ≥ `min_adv_usd` (rough "large-cap liquid" proxy)

@@ -1,6 +1,6 @@
 """K 线形态 - TA-Lib 61 个 CDL_* 全部打包 (family=pattern).
 
-参考资料中涉及大量单期形态 (岛形反转/钻石顶/头肩/W底/M顶/旗形/杯柄 等)，
+博主会员合集里讲过大量单期形态 (岛形反转/钻石顶/头肩/W底/M顶/旗形/杯柄 等)，
 都属于 K 线组合。TA-Lib 已经覆盖了这些经典形态的识别算法 (每个返回 -100/0/+100)。
 
 我们把 61 个形态作为一个"形态族":
@@ -18,7 +18,7 @@ import talib
 
 NAME = "cdl_patterns"
 FAMILY = "pattern"
-EPISODE = 0  # 覆盖多期 K 线形态专题 (110/112/40/47/18/41/150/151 等)
+EPISODE = 0  # 覆盖博主的多期 K 线形态专题 (110/112/40/47/18/41/150/151 等)
 
 # 所有 CDL_* 函数
 _CDL_FUNCS = [fn for fn in talib.get_function_groups()["Pattern Recognition"]]

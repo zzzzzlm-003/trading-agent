@@ -1,7 +1,7 @@
 # tech_score universe
 # ============================================================
 # verification: broad market + sector ETFs used to TEST whether
-#   the rules actually work (10+ years of data preferred).
+#   blogger's rules actually work (10+ years of data preferred).
 # personal: user's own watchlist — once a rule is verified, run
 #   the scoring function on these.
 # ============================================================
@@ -38,7 +38,7 @@ verification:
   hk_index:
     - "^HSI"        # 恒生指数
     - "^HSTECH"     # 恒生科技（自动回退 513180.SS）
-  # 大宗商品 / 贵金属 / 加密（亦相关）
+  # 大宗商品 / 贵金属 / 加密（博主也会提到）
   commodity:
     - GLD           # 黄金
     - SLV           # 白银

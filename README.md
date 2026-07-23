@@ -1,103 +1,141 @@
-# Trading Agent — Technical-Signal Research Pipeline
+# Trading Analysis Agent
 
-Modular research pipeline for rule-based technical signals: 19 indicator rule modules, per-rule backtest verification against buy-and-hold, regime-aware composite scoring, and an LLM methodology agent built on top of transcribed research notes.
-
-<!-- TODO: add results chart -->
-![Results](docs/results.png)
-
-## Headline results (per-rule verification, 26-symbol universe)
-
-Every rule is backtested per symbol and compared against buy-and-hold (B&H) on the same window. Excerpt from `tech_score/results/leaderboard.csv`:
-
-| Rule | Family | Median Sharpe | Median B&H Sharpe | % beat B&H |
-|---|---|---|---|---|
-| rvwap | volume | 0.72 | 0.73 | 36% |
-| atr_kc | volatility | 0.68 | 0.72 | 38% |
-| boll | volatility | 0.61 | 0.72 | 4% |
-| rsi | momentum | 0.61 | 0.72 | 27% |
-| sar | momentum | 0.57 | 0.72 | 12% |
-
-The honest takeaway: **most literal single-indicator rules do not beat buy-and-hold** — which is exactly why the pipeline verifies every rule individually before anything reaches the composite, and why the composite is regime-aware rather than a naive vote.
-
-## Architecture
-
-```
-tech_score/
-├── data.py        # OHLCV fetch + caching (yfinance / AkShare)
-├── rules/         # 19 rule modules, one indicator each, uniform signal(df) API
-├── verify.py      # Per-rule event-study backtest vs buy-and-hold
-├── regime.py      # Trend/range regime classification
-├── composite.py   # Regime-aware weighted composite score
-├── filters.py     # Liquidity / data-quality filters
-└── results/       # Verification CSVs + leaderboard
-```
-
-Around the scoring core:
-
-| File | Role |
-|---|---|
-| `analyzer.py` | Single-ticker technical snapshot: indicators + candlestick patterns + (A-share) money flow + (US) options context |
-| `signal_generator.py` / `trade_gate.py` / `risk_manager.py` | L1 signal → gate → position-sizing chain |
-| `backtest.py` | Strategy-level backtesting |
-| `transcript_strategy_agent.py` | Aggregates transcribed research notes into a queryable methodology agent (Claude API) |
-| `get_youtube_transcript.py` | Whisper-based transcription utility — for audio/video you have rights to |
-
-## Rule modules — design rationale
-
-One line per module in `tech_score/rules/` (each exports a uniform `signal(df)`):
-
-- **ma** — MA5/MA20 crossover as the baseline trend-following signal.
-- **macd** — MACD line/signal cross on daily+ bars; momentum confirmation.
-- **rsi** — fast RSI(6) for overbought/oversold timing.
-- **kdj** — K/D golden cross in the low zone (<20) as a bottom-fishing entry.
-- **boll** — touch of the lower Bollinger band as a mean-reversion buy.
-- **atr_kc** — Keltner-style channel (EMA20 ± 2·ATR14) for volatility breakouts.
-- **bbi** — average of MA3/6/12/24 as a single bull/bear dividing line.
-- **cci** — CCI(14) crossing up through −100 as an oversold rebound.
-- **cdl_patterns** — aggregate vote over TA-Lib's 61 candlestick patterns.
-- **demark** — TD Setup-9 count as a trend-exhaustion counter.
-- **divergence** — price/indicator divergence as an early reversal warning.
-- **fib** — retracement zones off the 60-day swing high/low.
-- **gmma** — alignment of short vs long EMA groups for trend strength.
-- **ichimoku** — price-vs-cloud position plus Tenkan/Kijun cross.
-- **obv** — OBV MA20 crossing MA60 as a volume-led breakout.
-- **rvwap** — 5-day rolling VWAP as an institutional cost line.
-- **sar** — parabolic SAR flip for stop-and-reverse trend entries.
-- **volume_price** — classic volume-price relation heuristics (rising volume + rising price = continuation).
-- **wvad** — intrabar buying-pressure accumulation ((C−O)/(H−L)·V).
-
-## Usage
-
-```bash
-pip install ta-lib yfinance akshare pandas numpy mplfinance openai-whisper anthropic
-
-# Verify every rule on the universe and rebuild the leaderboard
-python -m tech_score
-
-# Single-ticker snapshot (US / A-share / HK index proxy)
-python analyzer.py NVDA
-python analyzer.py 600519
-```
-
-## Methodology agent (optional)
-
-`transcript_strategy_agent.py` builds a strategy profile and a system prompt from transcribed research notes in `transcripts/` (not tracked in git), then answers questions with retrieved evidence:
-
-```bash
-python transcript_strategy_agent.py --build
-python transcript_strategy_agent.py --ask "Does this system weight MACD or RSI more?"
-```
-
-Transcription: use `get_youtube_transcript.py` to transcribe audio/video you have rights to; outputs go to `transcripts/`.
-
-## Data sources
-
-| Market | Prices | Flow / options |
-|---|---|---|
-| US | yfinance | yfinance options chain |
-| A-share | AkShare (Eastmoney) | AkShare money flow |
-| HK tech | yfinance (3033.HK proxy) | — |
+支持美股（含期权）| A股（含资金流）| 恒生科技指数
 
 ---
 
-*For research/education only, not investment advice.*
+## 安装依赖
+
+```bash
+pip install ta-lib yfinance akshare pandas numpy mplfinance openai-whisper yt-dlp anthropic
+
+# macOS 需要 ffmpeg（Whisper 转录音频用）
+brew install ffmpeg
+```
+
+---
+
+## 文件说明
+
+| 文件 | 功能 |
+|------|------|
+| `analyzer.py` | 主分析模块：技术指标 + 蜡烛图 + 资金流 + 期权 |
+| `get_youtube_transcript.py` | 获取 YouTube 会员视频文字稿 |
+| `transcript_strategy_agent.py` | 聚合所有 transcript，构建“方法论技术分析 Agent” |
+
+---
+
+## 使用方法
+
+### 1. 分析股票
+
+```python
+from analyzer import analyze
+
+analyze("NVDA")       # 美股（含期权建议）
+analyze("600519")     # A股茅台（含主力资金流）
+analyze("AAPL")       # 美股苹果
+analyze("HSTECH")     # 恒生科技指数（代理：3033.HK）
+```
+
+命令行：
+```bash
+python analyzer.py NVDA
+python analyzer.py 600519
+python analyzer.py NVDA AAPL TSLA   # 批量分析
+```
+
+### 2. 获取 YouTube 会员视频文字稿
+
+**前提：在 Chrome 中登录 YouTube 会员账号**
+
+> 合规提示：仅处理你有合法访问权限且符合平台条款的内容。
+
+```bash
+# 单个视频
+python get_youtube_transcript.py https://youtu.be/xxxx
+
+# 转录 + 自动提炼方法论（需要 ANTHROPIC_API_KEY）
+export ANTHROPIC_API_KEY=your_key
+python get_youtube_transcript.py https://youtu.be/xxxx --extract-method
+
+# 指定模型（large 质量最好，medium 速度更快）
+python get_youtube_transcript.py https://youtu.be/xxxx --model medium
+
+# 批量处理（urls.txt 每行一个链接）
+python get_youtube_transcript.py --batch urls.txt
+```
+
+文字稿保存在 `transcripts/` 目录，包含：
+- `xxx.txt` — 纯文字稿
+- `xxx.srt` — 带时间戳字幕
+- `xxx_timestamped.txt` — 带时间轴的文字稿
+- `xxx_methodology.txt` — 投资方法论提炼（需要 `--extract-method`）
+
+### 3. 基于全部 transcript 构建技术分析 Agent
+
+```bash
+# 生成策略画像 + system prompt
+python transcript_strategy_agent.py --build
+
+# 询问：从历史 transcript 中检索证据并回答
+python transcript_strategy_agent.py --ask "这个体系更重视MACD还是RSI？"
+
+# 可选：用 Claude 生成高质量方法论（需要 ANTHROPIC_API_KEY）
+export ANTHROPIC_API_KEY=your_key
+python transcript_strategy_agent.py --build --claude
+```
+
+会输出：
+- `transcripts/strategy_profile.json` — 聚合统计画像
+- `transcripts/strategy_system_prompt.md` — 可直接注入 Agent 的 system prompt
+- `transcripts/strategy_claude_synthesis.md` — Claude 深度综合（可选）
+
+---
+
+## 技术分析覆盖范围
+
+### 指标
+- 均线：MA5 / MA10 / MA20 / MA60 / EMA20
+- MACD（金叉/死叉检测）
+- RSI(6) / RSI(14)
+- KDJ（K/D/J）
+- 布林带（位置百分比 + 带宽）
+- ATR(14) 波动性
+- 成交量比（放量/缩量判断）
+
+### 蜡烛图形态（TA-Lib，61种，含中文名）
+锤子线、吊人线、吞没、十字星、晨星、黄昏星、乌云盖顶、刺透形态、三白兵、三黑鸦……等全部 61 种，并标注看涨/看跌/中性
+
+### A股专属
+- 个股主力净流入（今日 + 3日 + 5日趋势）
+- 超大单（机构）/ 大单 / 中单 / 小单分层
+- 北向资金（沪股通 + 深股通）
+
+### 美股期权专属
+- ATM IV 均值估算
+- 最大痛点（Max Pain）
+- 最活跃 Call / Put 合约
+- 基于技术面自动建议期权策略：
+  - Bull Put Spread / Bear Call Spread（IV 高时）
+  - Long Call / Long Put（IV 正常时）
+  - Iron Condor / Short Strangle（方向不明 + IV 高）
+
+---
+
+## 数据源
+
+| 市场 | 价格数据 | 资金/期权数据 |
+|------|---------|-------------|
+| 美股 | yfinance | yfinance 期权链 |
+| A股 | AkShare（东方财富） | AkShare 资金流向 |
+| 恒生科技 | yfinance (3033.HK) | — |
+
+---
+
+## 进阶：将博主方法论注入 Agent
+
+1. 用 `get_youtube_transcript.py --extract-method` 处理几期核心视频
+2. 将生成的 `*_methodology.txt` 整理成一份方法论文档
+3. 在 `analyzer.py` 的综合分析部分，将方法论作为 system prompt 调用 Claude API
+4. 或者直接把方法论文档粘贴到 Claude Cowork 对话开头，再分析具体标的

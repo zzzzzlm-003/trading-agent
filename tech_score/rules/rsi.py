@@ -1,10 +1,10 @@
 """RSI — 会员第30期.
 
-规则 (literal):
+博主规则 (literal):
   - 使用周期 6 (快线) 为主，日线及以上
   - RSI6 < 20 = 超卖反弹机会 (弱买信号)
   - RSI6 > 80 = 超买回调风险 (弱卖信号)
-  - 背离 (顶/底) 强调但 literal 回测仅用 20/80 阈值
+  - 背离 (顶/底) 博主强调但 literal 回测仅用 20/80 阈值
 """
 from __future__ import annotations
 import numpy as np

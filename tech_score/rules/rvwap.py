@@ -1,10 +1,10 @@
 """Rolling VWAP (5 日) — 会员第270期.
 
-用法 (literal):
+博主用法 (literal):
   - 5 日 rolling VWAP 作为机构近期成本线
   - Buy: 价格从 VWAP 下方上穿 VWAP + VWAP 当日斜率 > 0
   - Sell: 价格从 VWAP 上方跌破 VWAP + 连续 3 日保持下方
-  - 注意："VWAP 是滞后线，不能作为先行信号"
+  - 博主提示："VWAP 是滞后线，不能作为先行信号"
 """
 from __future__ import annotations
 import pandas as pd

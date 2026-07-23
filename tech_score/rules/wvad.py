@@ -1,11 +1,11 @@
 """WVAD 威廉变异离散量 — 会员第147期.
 
-改良版 (literal):
+博主改良版 (literal):
   WVAD[i] = (Close - Open) / (High - Low) × Volume
-  WVAD_sum = rolling(24) WVAD    （常用周期）
+  WVAD_sum = rolling(24) WVAD    （博主的常用周期）
   - 下降趋势中: WVAD 由负转正 + K 线见底形态 → 买
   - 上升趋势中: WVAD 由正转负 + K 线见顶形态 → 卖
-  - 禁区: 横盘震荡中零轴附近上下穿越 → 空信号（原规则说："小震不动作"）
+  - 禁区: 横盘震荡中零轴附近上下穿越 → 空信号（博主说："小震不动作"）
 """
 from __future__ import annotations
 import pandas as pd

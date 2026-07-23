@@ -1,6 +1,6 @@
 """Parabolic SAR — 会员第64期.
 
-规则 (literal):
+博主规则 (literal):
   - SAR 点翻转到价格下方 = 多头启动，买
   - SAR 点翻转到价格上方 = 空头启动，卖
 """
