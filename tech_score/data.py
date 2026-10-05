@@ -113,12 +113,12 @@ def fetch(symbol: str, period: str = "10y") -> pd.DataFrame:
             (s.isdigit() and len(s) == 6))
     if is_a:
         code = core.zfill(6)
-        # Try yfinance first — handles A-share ETFs cleanly and avoids akshare flakiness.
-        # Only fall back to akshare when yfinance truly has no data (rare for ETFs,
-        # common for raw index codes like 000300).
-        if s.endswith(".SS") or s.endswith(".SZ"):
+        # Try yfinance first — handles A-share ETFs cleanly and avoids akshare flakiness
+        # (akshare's eastmoney endpoints are often blocked from non-China IPs).
+        candidates = [s] if (s.endswith(".SS") or s.endswith(".SZ")) else [f"{code}.SS", f"{code}.SZ"]
+        for cand in candidates:
             try:
-                df = _fetch_yfinance(s, period)
+                df = _fetch_yfinance(cand, period)
                 if len(df) >= 50:
                     return df
             except Exception:
